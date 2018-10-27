@@ -2,7 +2,7 @@ import sbt.Keys._
 
 lazy val GatlingTest = config("gatling") extend Test
 
-scalaVersion in ThisBuild := "2.12.6"
+scalaVersion in ThisBuild := "2.11.12"
 
 crossScalaVersions := Seq("2.11.12", "2.12.6")
 
@@ -21,6 +21,14 @@ libraryDependencies += "net.codingwell" %% "scala-guice" % "4.2.1"
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
 libraryDependencies += "io.gatling.highcharts" % "gatling-charts-highcharts" % gatlingVersion(scalaBinaryVersion.value) % Test
 libraryDependencies += "io.gatling" % "gatling-test-framework" % gatlingVersion(scalaBinaryVersion.value) % Test
+
+libraryDependencies += "com.typesafe.play" %% "play-slick" % "3.0.0"
+libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.47"
+
+libraryDependencies ++= Seq(
+  "org.apache.spark" %% "spark-core" % "2.3.2",
+  "org.apache.spark" %% "spark-mllib" % "2.3.2"
+)
 
 // The Play project itself
 lazy val root = (project in file("."))
