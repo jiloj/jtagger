@@ -4,7 +4,7 @@ import java.sql.Date
 import java.time.LocalDate
 
 import javax.inject.Inject
-import model.base.Tagger
+import model.base.TaggerRef
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._
@@ -18,9 +18,9 @@ import scala.concurrent.Future
   */
 class TaggerDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
   extends HasDatabaseConfigProvider[JdbcProfile]
-    with AllDAO[Tagger]
-    with InsertableDAO[Tagger]
-    with LookupableDAO[Tagger] {
+    with AllDAO[TaggerRef]
+    with InsertableDAO[TaggerRef]
+    with LookupableDAO[TaggerRef] {
   private val InsertTaggerQuery = Taggers returning Taggers.map(_.id) into
     ((tagger, id) => tagger.copy(id=id))
 
@@ -29,7 +29,7 @@ class TaggerDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     *
     * @return A Future that resolves to all elements in the persistence layer.
     */
-  def all: Future[Iterable[Tagger]] = {
+  def all: Future[Iterable[TaggerRef]] = {
     db.run(Taggers.result)
   }
 
@@ -39,7 +39,7 @@ class TaggerDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     * @param tr The Tagger to insert.
     * @return A Future that resolves to the inserted reference of the TaggerRef.
     */
-  def insert(tr: Tagger): Future[Tagger] = {
+  def insert(tr: TaggerRef): Future[TaggerRef] = {
     val query = InsertTaggerQuery += tr
     db.run(query)
   }
@@ -50,7 +50,7 @@ class TaggerDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
     * @param id The id to lookup the TaggerRef by.
     * @return A Future that resolves to the found TaggerRef if properly found.
     */
-  def lookup(id: Int): Future[Option[Tagger]] = {
+  def lookup(id: Int): Future[Option[TaggerRef]] = {
     val query = Taggers.filter(_.id === id).take(1).result.headOption
     db.run(query)
   }
@@ -59,7 +59,7 @@ class TaggerDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
 /**
   * The schema for the Tagger in the persistence layer.
   */
-class TaggerSchema(tag: Tag) extends Table[Tagger](tag, "tagger") {
+class TaggerSchema(tag: Tag) extends Table[TaggerRef](tag, "tagger") {
   private implicit val localDateToSqlDate = MappedColumnType.base[LocalDate, Date](
     l => Date.valueOf(l),
     d => d.toLocalDate
@@ -68,7 +68,7 @@ class TaggerSchema(tag: Tag) extends Table[Tagger](tag, "tagger") {
   def filepath = column[String]("filepath", O.Unique, O.Length(100))
   def created = column[LocalDate]("created")
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-  def * = (filepath, created, id) <> (Tagger.tupled, Tagger.unapply)
+  def * = (filepath, created, id) <> (TaggerRef.tupled, TaggerRef.unapply)
 }
 
 /**

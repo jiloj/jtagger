@@ -9,4 +9,4 @@ import java.time.LocalDate
   * @param created The timestamp for the creation of this tagger .
   * @param id The id for this tagger.
   */
-case class Tagger(filepath: String, created: LocalDate, id: Int)
+case class TaggerRef(filepath: String, created: LocalDate, id: Int)

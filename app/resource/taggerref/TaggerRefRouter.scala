@@ -1,4 +1,4 @@
-package resource.tagger
+package resource.taggerref
 
 import javax.inject.Inject
 import play.api.routing.Router.Routes
@@ -9,7 +9,7 @@ import play.api.routing.sird._
   * Routes the different url requests to the controller actions. The available actions are to get tagger information,
   * create a tagger, and list all tagger information.
   */
-class TaggerRouter @Inject()(controller: TaggerController) extends SimpleRouter {
+class TaggerRefRouter @Inject()(controller: TaggerRefController) extends SimpleRouter {
   override def routes: Routes = {
     case GET(p"/") =>
       controller.index
