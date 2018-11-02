@@ -23,7 +23,7 @@ object TaggerRefResource {
     def writes(resource: TaggerRefResource): JsValue = {
       Json.obj(
         "id" -> resource.id,
-        "name" -> resource.name
+        "name" -> resource.name,
         "created" -> resource.created
       )
     }

@@ -1,6 +1,8 @@
-GET        /tag                   controllers.AppController.tag
+GET        /tag                   controller.AppController.tag
+GET        /seed                  controller.AppController.seed
+GET        /create                controller.AppController.create
 
-->         /taggerrefs            resource.tagger.TaggerRefRouter
+->         /taggerrefs            resource.taggerref.TaggerRefRouter
 
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file        controllers.Assets.at(path="/public", file)

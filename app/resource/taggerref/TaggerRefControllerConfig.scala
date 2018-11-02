@@ -9,6 +9,7 @@ import play.api.http.{FileMimeTypes, HttpVerbs}
 import play.api.i18n.{Langs, MessagesApi}
 import play.api.mvc._
 import resource.ResourceHandler
+import service.JNode
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -87,6 +88,7 @@ class TaggerRefActionBuilder @Inject()(messagesApi: MessagesApi, playBodyParsers
  */
 case class TaggerRefControllerComponents @Inject()(taggerActionBuilder: TaggerRefActionBuilder,
                                                    taggerRefDAO: TaggerDAO,
+                                                   jnode: JNode,
                                                    actionBuilder: DefaultActionBuilder,
                                                    parsers: PlayBodyParsers,
                                                    messagesApi: MessagesApi,
@@ -104,6 +106,7 @@ class TaggerRefBaseController @Inject()(tcc: TaggerRefControllerComponents)
   override protected def controllerComponents: ControllerComponents = tcc
 
   def TaggerRefAction: TaggerRefActionBuilder = tcc.taggerActionBuilder
+  def jnode: JNode = tcc.jnode
 
   def resourceHandler: ResourceHandler[TaggerRef, TaggerRefResource] =
     new ResourceHandler[TaggerRef, TaggerRefResource](tcc.taggerRefDAO, createTaggerRefResource)

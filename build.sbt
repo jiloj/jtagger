@@ -27,8 +27,12 @@ libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.47"
 
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % "2.3.2",
+  "org.apache.spark" %% "spark-sql" % "2.3.2",
   "org.apache.spark" %% "spark-mllib" % "2.3.2"
 )
+
+libraryDependencies += ws
+libraryDependencies += ehcache
 
 // The Play project itself
 lazy val root = (project in file("."))

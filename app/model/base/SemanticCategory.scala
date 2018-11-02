@@ -5,6 +5,6 @@ package model.base
   * jeopardy categories can be pulled from.
   *
   * @param text The text of the category, such as Science, or Art.
-  * @param id The id of the category.
+  * @param id The id of the category. This by default is 0, and is set on insert.
   */
-case class SemanticCategory(text: String, id: Int)
+case class SemanticCategory(text: String, id: Int = 0)
