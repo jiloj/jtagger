@@ -25,10 +25,18 @@ libraryDependencies += "io.gatling" % "gatling-test-framework" % gatlingVersion(
 libraryDependencies += "com.typesafe.play" %% "play-slick" % "3.0.0"
 libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.47"
 
+libraryDependencies += "org.apache.hadoop" % "hadoop-client" % "2.7.2"
+
+libraryDependencies += "com.chuusai" %% "shapeless" % "2.3.3"
+
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % "2.3.2",
   "org.apache.spark" %% "spark-sql" % "2.3.2",
   "org.apache.spark" %% "spark-mllib" % "2.3.2"
+)
+
+dependencyOverrides ++= Seq(
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7.1"
 )
 
 libraryDependencies += ws
@@ -40,14 +48,6 @@ lazy val root = (project in file("."))
   .configs(GatlingTest)
   .settings(inConfig(GatlingTest)(Defaults.testSettings): _*)
   .settings(
-    name := """play-scala-rest-api-example""",
+    name := """jtagger""",
     scalaSource in GatlingTest := baseDirectory.value / "/gatling/simulation"
-  )
-
-// Documentation for this project:
-//    sbt "project docs" "~ paradox"
-//    open docs/target/paradox/site/index.html
-lazy val docs = (project in file("docs")).enablePlugins(ParadoxPlugin).
-  settings(
-    paradoxProperties += ("download_url" -> "https://example.lightbend.com/v1/download/play-rest-api")
   )

@@ -1,9 +1,10 @@
 package resource.taggerref
 
+import java.time.LocalDate
+
 import javax.inject.Inject
 import ml.spark.NaiveBayesTagger
-import model.base.Clue
-import org.apache.spark.ml.classification.NaiveBayes
+import model.base.{Clue, TaggerRef}
 import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc._
@@ -42,21 +43,40 @@ class TaggerRefController @Inject()(cc: TaggerRefControllerComponents)(implicit 
   def process: Action[JsValue] = TaggerRefAction.async(parse.json) { implicit request =>
     logger.trace("TaggerRefController#process")
 
-    (request.body \ "data").asOpt[JsObject].map { data =>
-      val training = data.value.map { kvp =>
-        val clueId = kvp._1.toInt
-        val semcatLabel = kvp._2.as[String]
+    val semanticCatTextToIdFuture = semanticCatDAO.all.map { semcats =>
+      semcats.map { semcat =>
+        semcat.text -> semcat.id
+      }.toMap
+    }
 
-        (jnode.clue(clueId.toInt), semcatLabel)
+    val nameOpt = (request.body \ "name").asOpt[String]
+    val dataOpt = (request.body \ "data").asOpt[JsObject]
+
+    semanticCatTextToIdFuture.flatMap { semanticCatsTextToId =>
+      val taggerResult = for {
+        data <- dataOpt
+        name <- nameOpt
+      } yield {
+        val training = data.value.map { kvp =>
+          val clueId = kvp._1.toInt
+          val semcatLabel = kvp._2.as[String]
+
+          (jnode.clue(clueId), semanticCatsTextToId(semcatLabel))
+        }
+
+        FutureUtil.mappingKey[Clue, Int](training).map { resolved =>
+          val tagger = NaiveBayesTagger.create(resolved)
+          NaiveBayesTagger.persist(tagger, name)
+          resourceHandler.insert(TaggerRef(name, LocalDate.now()))
+
+          Ok(Json.obj("success" -> true, "msg" -> s"$name tagger successfully created."))
+        }
       }
 
-      FutureUtil.mappingKey[Clue, String](training).map { resolved =>
-        val tagger = NaiveBayesTagger.create(resolved)
-        Ok(Json.obj("matias" -> "grioni"))
-      }
-    }.getOrElse {
-      Future.successful {
-        BadRequest(Json.obj("msg" -> "No `data` field in the request json."))
+      taggerResult.getOrElse {
+        Future.successful {
+          BadRequest(Json.obj("msg" -> "No `data` field in the request json."))
+        }
       }
     }
   }

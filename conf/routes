@@ -1,4 +1,4 @@
-GET        /tag                   controller.AppController.tag
+POST       /tag                   controller.AppController.tag
 GET        /seed                  controller.AppController.seed
 GET        /create                controller.AppController.create
 

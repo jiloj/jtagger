@@ -1,6 +1,6 @@
 package resource
 
-import model.dao.{AllDAO, LookupableDAO}
+import model.dao.{AllDAO, InsertableDAO, LookupableDAO}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,5 +38,27 @@ class ResourceHandler[A, B](dao: LookupableDAO[A] with AllDAO[A], convert: A => 
         convert(res)
       }
     }
+  }
+}
+
+/**
+  *
+  * @param dao The DAO to interface with. This DAO should be lookupable and can access all elements from it.
+  * @param convert The converter to go from db object to consumer resource.
+  * @param inverse
+  * @param ec The execution environment to run in.
+  * @tparam A The db model type that this handler takes in.
+  * @tparam B The consumer resource type that this handler provides.
+  */
+class WritableResourceHandler[A, B](dao: AllDAO[A] with InsertableDAO[A] with LookupableDAO[A],
+                                    convert: A => B)(implicit ec: ExecutionContext)
+  extends ResourceHandler[A, B](dao, convert) {
+  /**
+    *
+    * @param obj
+    * @return
+    */
+  def insert(obj: A): Future[A] = {
+    dao.insert(obj)
   }
 }

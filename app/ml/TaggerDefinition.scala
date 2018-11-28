@@ -3,20 +3,19 @@ package ml
 import scala.collection.Map
 
 /**
-  * Defines the Tagger interface beyond simply tagging, such as marshalling and training.
+  * Defines the Tagger interface beyond simply tagging, such as marshalling, training, and other domain problems.
   *
   * @tparam A The Tagger type to output.
   * @tparam B The input type to the tagger.
-  * @tparam C The output type of the tagger.
   */
-trait TaggerDefinition[A <: Tagger[B, C], B, C] {
+trait TaggerDefinition[A <: Tagger[B], B] {
   /**
     * Creates a new tagger given the provided training data.
     *
-    * @param train The map from input to output to serve as training data.
+    * @param train The map from input to category id to serve as training data.
     * @return The created Tagger from the provided training data.
     */
-  def create(train: Map[B, C]): A
+  def create(train: Map[B, Int]): A
 
   /**
     * Marshal a given Tagger to a file.
