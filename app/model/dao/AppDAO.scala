@@ -20,7 +20,6 @@ class AppDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
     */
   def create(): Future[Unit] = {
     val schemaCreation = DBIO.seq(
-      SemanticCategories.schema.create,
       Taggers.schema.create
     )
 

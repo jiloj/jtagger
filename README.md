@@ -9,6 +9,9 @@ The defined semantic categories for this service are *history*, *sports*, *geogr
 * Most historical events
 * Past political events, especially when said person is dead
 * Wars and battles
+* All royalty based questions including modern day royalty as they are in a continuation of historical royalty
+* Historically relevant military weapon. Modern day military equipment goes into science.
+* Discoverers, explorers, and expiditioners
 
 
 #### Sports
@@ -18,6 +21,7 @@ The defined semantic categories for this service are *history*, *sports*, *geogr
 * Events and type of sport
 * Board games, card games, and other non physical games are still considered sport for this purpose
 * Location of the olympics goes here as well, unless there is identifiable information that can make the semantic vector different
+* Video games information will go here, unless it is a part of a larger universe story in which case it can go in a more appropriate category
 
 
 #### Geography
@@ -25,20 +29,24 @@ The defined semantic categories for this service are *history*, *sports*, *geogr
 * This is human geography and physical geography such as rivers and mountains
 * Physical processes will tend to fall under *Science* however.
 * College questions related to location tend to be here as well
-* Socio-linguistics falls here than under *Words*
+* Similarly with info heavily related to travel and tourism
+* Linguistics falls here than under *Words*, especially due to shared vocabulary between them
 * Currency questions
 * Landmarks
+* International trivia, including things I would know generally about a country
 
 
 #### Culture
 
 * Business and brand information
 * NGO and non-profit information
-* Reality tv and pop culture
-* Cultural icons, including comic book tidbits
+* Pop culture
+* Cultural icons, including comic book tidbits, and common reference books
 * Holidays
-* Quotes will tend to be here too, but are not deterministically so
+* Quotes in common parlance will tend to be here too, but are not deterministically so
 * American nursery rhymes
+* Common workplace related information
+* Computer programs and software, unless they are games in which they will go under *Sports*
 
 
 #### Science
@@ -47,7 +55,8 @@ The defined semantic categories for this service are *history*, *sports*, *geogr
 * Questions about scientists themselves
 * Questions about botany or zoology
 * Questions about specific technical museums or their names / information
-* Inventions or patents can go here as well
+* Inventions or patents can go here as well if they are related to specialized forms of information
+  - The inventor of the cotton gin for example is more appropriate in *history*
 
 
 #### Politics
@@ -56,22 +65,25 @@ The defined semantic categories for this service are *history*, *sports*, *geogr
 * Political party information here and abroad
 * Court cases, except for foundational or historic ones from more than a century back
 * Modern day government affairs such as the army or logistics
+* Classical political theory such as Locke and Hobbes
 
 
 #### Religion
 
 * Any having to do with belief systems, holy books, and so forth
+* Any folk lore or tall tales
 * This does not include mythology as noted in the *Classics* section
 
 
 #### Words
 
 * Linguistic questions, such as etymology
+* Foreign languages
 * Word play
 * Common sayings and idioms
 * Terminology of some sort
 * Vocabulary based questions
-* These tend to be things not requiring technical knowledge, and are known in common parlance
+* These tend to be things not requiring technical knowledge, and are known in common parlance, such as sayings or idioms
 
 
 #### Music
@@ -85,6 +97,7 @@ The defined semantic categories for this service are *history*, *sports*, *geogr
 * NOTE: This is a fairly specialized category that is not coming up very often. Consider merging with other categories.
 * Art works and artists
 * Art supplies and technical terms
+* Architecture
 
 
 #### Food
@@ -119,6 +132,7 @@ The defined semantic categories for this service are *history*, *sports*, *geogr
 * Plays, dramas, musicals, ballet, etc. unless literature is a better fit such as for Shakespeare
 * Basically theatrical performance other than tv or film.
 * Comedians and comedies will usually fall under here too depending on their other roles
+* Consider this a performing arts category
 
 
 #### Classics
@@ -135,3 +149,4 @@ These are other notes and thoughts that I am coming across as I am starting to u
 
 * There are several clues that are an extreme split between categories, in that the same word is used in various contexts, and the Jeopardy! writers take advantage of this. The current approach is to arbitrarily pick one of the possibilities. This should codified for future annotation.
 * Some categories are improperly defined between themselves such as theatre and literature, opera and music, politics and history, and classics and religion. Furthermore, a category like words intersects with all of them. These distinctions should be made more clear.
+* When taking into consideration a category for a question, look closely at the answer and category as these are high information density points. The answer is the thing we are actually looking for and it's semantic meaning will play heavily into the category and also for category, which will prime us for the type of answer.

@@ -3,7 +3,6 @@ package ml.spark
 import scala.collection.Map
 import ml.{Tagger, TaggerDefinition}
 import model.base.Clue
-import shapeless.syntax.std.tuple_
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.classification.NaiveBayes
 import org.apache.spark.ml.feature._
@@ -31,7 +30,15 @@ class NaiveBayesTagger private (val model: PipelineModel) extends Tagger[Clue] {
       Clue.unapply(clue).get
     }.toDF("question", "answer", "category", "value", "round")
     val classification = model.transform(df)
-    println(classification)
+    println("Here")
+    for {
+      column <- classification.columns
+    } yield {
+      println(column)
+      println(classification.first().getAs(column))
+      println()
+    }
+
     val semcat = classification.first().getAs[Double]("prediction").toInt
 
     semcat
@@ -74,9 +81,10 @@ object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
     */
   override def create(train: Map[Clue, Int]): NaiveBayesTagger = {
     val df = train.toSeq.map { tup =>
-      Clue.unapply(tup._1) :+ tup._2
+      // TODO: How to use shapeless here.
+      val c = tup._1
+      (c.question, c.answer, c.category, c.value, c.round, tup._2)
     }.toDF("question", "answer", "category", "value", "round", "label")
-    println(df)
 
     val model = classifierPipeline.fit(df)
     new NaiveBayesTagger(model)
@@ -114,8 +122,10 @@ object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
       .setInputCol(inputCol)
       .setOutputCol(inputCol + "_tokens")
 
+    // TODO: Fix this string abomination
+    val tmp = "["+ inputCol + "]"
     val prefixTransformer = new SQLTransformer()
-      .setStatement(s"SELECT *, prefixTokens(${tokenizer.getOutputCol}, $inputCol)" +
+      .setStatement(s"SELECT *, prefixTokens(${tokenizer.getOutputCol}, $tmp)" +
                     s"as prefix_${tokenizer.getOutputCol} FROM __THIS__")
 
     val counter = new CountVectorizer()

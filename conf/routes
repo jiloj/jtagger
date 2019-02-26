@@ -1,5 +1,4 @@
 POST       /tag                   controller.AppController.tag
-GET        /seed                  controller.AppController.seed
 GET        /create                controller.AppController.create
 
 ->         /taggerrefs            resource.taggerref.TaggerRefRouter

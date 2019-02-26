@@ -90,37 +90,4 @@ class AppController @Inject()(semcatDAO: SemanticCategoryDAO, appDAO: AppDAO, cc
       Ok(Json.obj("success" -> true, "msg" -> "jtagger schema successfully created"))
     }
   }
-
-  /**
-    * Seed the initial app with the appropriate semantic categories.
-    *
-    * @return A successful result message when the operation is complete.
-    */
-  def seed: Action[AnyContent] = Action.async { implicit request =>
-    val categoryTexts = List(
-      "HISTORY",
-      "SPORTS",
-      "GEOGRAPHY",
-      "CULTURE",
-      "SCIENCE",
-      "POLITICS",
-      "RELIGION",
-      "WORDS",
-      "MUSIC",
-      "ART",
-      "FOOD",
-      "OPERA",
-      "LITERATURE",
-      "TV/FILM"
-    )
-
-    val inserts = categoryTexts.map { text =>
-      val sc = SemanticCategory(text)
-      semcatDAO.insert(sc)
-    }
-
-    Future.sequence(inserts).map { _ =>
-      Ok(Json.obj("success" -> true, "msg" -> "jtagger seeding successful."))
-    }
-  }
 }
