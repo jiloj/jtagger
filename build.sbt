@@ -19,8 +19,6 @@ libraryDependencies += "com.netaporter" %% "scala-uri" % "0.4.16"
 libraryDependencies += "net.codingwell" %% "scala-guice" % "4.2.1"
 
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
-libraryDependencies += "io.gatling.highcharts" % "gatling-charts-highcharts" % gatlingVersion(scalaBinaryVersion.value) % Test
-libraryDependencies += "io.gatling" % "gatling-test-framework" % gatlingVersion(scalaBinaryVersion.value) % Test
 
 libraryDependencies += "com.typesafe.play" %% "play-slick" % "3.0.0"
 libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.47"
@@ -45,9 +43,6 @@ libraryDependencies += ehcache
 // The Play project itself
 lazy val root = (project in file("."))
   .enablePlugins(Common, PlayScala, GatlingPlugin)
-  .configs(GatlingTest)
-  .settings(inConfig(GatlingTest)(Defaults.testSettings): _*)
   .settings(
-    name := """jtagger""",
-    scalaSource in GatlingTest := baseDirectory.value / "/gatling/simulation"
+    name := """jtagger"""
   )
