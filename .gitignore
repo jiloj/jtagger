@@ -1,6 +1,9 @@
+# Folders
 build
 logs
 target
+out
+spark-warehouse
 /.idea
 /.idea_modules
 /.classpath
@@ -8,5 +11,9 @@ target
 /.project
 /.settings
 /RUNNING_PID
-
 /.vscode
+
+# Files
+*.class
+.*.swp
+.DS_Store
