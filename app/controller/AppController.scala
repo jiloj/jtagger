@@ -26,7 +26,8 @@ class AppController @Inject()(semcatDAO: SemanticCategoryDAO, appDAO: AppDAO, cc
     * @return The tagged category result.
     */
   def tag: Action[JsValue] = Action.async(parse.json) { implicit request =>
-    logger.trace("AppController#tag")
+    logger.info("AppController#tag")
+
     val semanticCatsIdToTextFuture = semcatDAO.all.map { semcats =>
       semcats.map { semcat =>
         semcat.id -> semcat.text
@@ -84,7 +85,7 @@ class AppController @Inject()(semcatDAO: SemanticCategoryDAO, appDAO: AppDAO, cc
     * @return A Future which resolves to a successful json response.
     */
   def create: Action[AnyContent] = Action.async { implicit request =>
-    logger.trace("AppcController#create")
+    logger.info("AppcController#create")
 
     appDAO.create().map { _ =>
       Ok(Json.obj("success" -> true, "msg" -> "jtagger schema successfully created"))

@@ -1,15 +1,9 @@
 import sbt.Keys._
-
-lazy val GatlingTest = config("gatling") extend Test
+cancelable in Global := true
 
 scalaVersion in ThisBuild := "2.11.12"
 
 crossScalaVersions := Seq("2.11.12", "2.12.6")
-
-def gatlingVersion(scalaBinVer: String): String = scalaBinVer match {
-  case "2.11" => "2.2.5"
-  case "2.12" => "2.3.1"
-}
 
 libraryDependencies += guice
 libraryDependencies += "org.joda" % "joda-convert" % "1.9.2"
