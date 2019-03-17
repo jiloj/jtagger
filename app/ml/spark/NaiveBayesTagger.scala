@@ -7,6 +7,7 @@ import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.classification.NaiveBayes
 import org.apache.spark.ml.feature._
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.concat_ws
 
 /**
   * The bare tagger functionality.
@@ -30,14 +31,6 @@ class NaiveBayesTagger private (val model: PipelineModel) extends Tagger[Clue] {
       Clue.unapply(clue).get
     }.toDF("question", "answer", "category", "value", "round")
     val classification = model.transform(df)
-    println("Here")
-    for {
-      column <- classification.columns
-    } yield {
-      println(column)
-      println(classification.first().getAs(column))
-      println()
-    }
 
     val semcat = classification.first().getAs[Double]("prediction").toInt
 
@@ -54,24 +47,7 @@ object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
     .appName("jtagger")
     .config("spark.master", "local")
     .getOrCreate()
-  spark.udf.register("prefixTokens", prefixTokens _)
   import spark.implicits._
-
-  private val questionPipeline = createTextFeaturePipeline("question", "question_features")
-  private val answerPipeline = createTextFeaturePipeline("answer", "answer_features")
-  private val categoryPipeline = createTextFeaturePipeline("category", "category_features")
-  private val assembler = new VectorAssembler()
-    .setInputCols(Array("question_features", "answer_features", "category_features"))
-    .setOutputCol("features")
-  private val featurePipeline = new Pipeline()
-    .setStages(Array(questionPipeline, answerPipeline, categoryPipeline, assembler))
-  private val naiveBayes = new NaiveBayes()
-    .setModelType("multinomial")
-    .setSmoothing(1)
-    .setFeaturesCol("features")
-    .setLabelCol("label")
-  private val classifierPipeline = new Pipeline()
-    .setStages(Array(featurePipeline, naiveBayes))
 
   /**
     * Creates a new tagger from the provided training dataset.
@@ -80,13 +56,35 @@ object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
     * @return The created Tagger from the provided training data.
     */
   override def create(train: Map[Clue, Int]): NaiveBayesTagger = {
-    val df = train.toSeq.map { tup =>
-      // TODO: How to use shapeless here.
-      val c = tup._1
-      (c.question, c.answer, c.category, c.value, c.round, tup._2)
+    // Map the training data to a DataFrame.
+    val df = train.toSeq.map { kvp =>
+      val c = kvp._1
+      (c.question, c.answer, c.category, c.value, c.round, kvp._2)
     }.toDF("question", "answer", "category", "value", "round", "label")
 
-    val model = classifierPipeline.fit(df)
+    // Add all the text columns together.
+    val transDF = df
+      .select(concat_ws(" ", $"question", $"answer", $"category"), $"value", $"round", $"label")
+      .withColumnRenamed("concat_ws( , question, answer, category)", "combined_text")
+
+    // Create my pipeline stages.
+    val tokenizer = new Tokenizer()
+      .setInputCol("combined_text")
+      .setOutputCol("tokens")
+
+    val counter = new CountVectorizer()
+      .setInputCol("tokens")
+      .setOutputCol("features")
+
+    val naiveBayes = new NaiveBayes()
+      .setModelType("multinomial")
+      .setSmoothing(1)
+      .setFeaturesCol("features")
+      .setLabelCol("label")
+
+    val classifierPipeline = new Pipeline()
+      .setStages(Array(tokenizer, counter, naiveBayes))
+    val model = classifierPipeline.fit(transDF)
     new NaiveBayesTagger(model)
   }
 
@@ -109,43 +107,5 @@ object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
   override def load(filename: String): NaiveBayesTagger = {
     val model = PipelineModel.load(filename)
     new NaiveBayesTagger(model)
-  }
-
-  /**
-    * Creates the feature pipeline for a certain column on a data frame. This column is assumed to have free text data.
-    *
-    * @param inputCol The name of the input column on the pipeline.
-    * @param outputCol The name of the output column on the pipeline.
-    */
-  private def createTextFeaturePipeline(inputCol: String, outputCol: String): Pipeline = {
-    val tokenizer = new Tokenizer()
-      .setInputCol(inputCol)
-      .setOutputCol(inputCol + "_tokens")
-
-    // TODO: Fix this string abomination
-    val tmp = "["+ inputCol + "]"
-    val prefixTransformer = new SQLTransformer()
-      .setStatement(s"SELECT *, prefixTokens(${tokenizer.getOutputCol}, $tmp)" +
-                    s"as prefix_${tokenizer.getOutputCol} FROM __THIS__")
-
-    val counter = new CountVectorizer()
-      .setInputCol(tokenizer.getOutputCol)
-      .setOutputCol(inputCol + "_counts")
-
-    val idf = new IDF().setInputCol(counter.getOutputCol).setOutputCol(outputCol)
-
-    new Pipeline()
-      .setStages(Array(tokenizer, prefixTransformer, counter, idf))
-  }
-
-  /**
-    * A helper function to prefix all items in a given vector.
-    *
-    * @param tokens The tokens to prefix.
-    * @param prefix The prefix to prepend.
-    * @return The mapped vector.
-    */
-  private def prefixTokens(tokens: Seq[String], prefix: String): Seq[String] = {
-    tokens.map(prefix + _)
   }
 }
