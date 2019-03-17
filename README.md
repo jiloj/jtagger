@@ -30,7 +30,7 @@ The defined semantic categories for this service are *history*, *sports*, *geogr
 * Physical processes will tend to fall under *Science* however.
 * College questions related to location tend to be here as well
 * Similarly with info heavily related to travel and tourism
-* Linguistics falls here than under *Words*, especially due to shared vocabulary between them
+* Linguistics falls here than under *Words*, especially due to shared vocabulary between them, when dealing with sociolinguistics type questions
 * Currency questions
 * Landmarks
 * International trivia, including things I would know generally about a country
@@ -72,6 +72,7 @@ The defined semantic categories for this service are *history*, *sports*, *geogr
 
 * Any having to do with belief systems, holy books, and so forth
 * Any folk lore or tall tales
+* Zodiac signs
 * This does not include mythology as noted in the *Classics* section
 
 
@@ -118,6 +119,7 @@ The defined semantic categories for this service are *history*, *sports*, *geogr
 * Includes shakespeare
 * News paper activities such as columnists, and editors
 * Philosophical works will go in here, such as my boi Sartre
+* Questions about literary devices and the theory of literature and writing will tend to go here.
 
 
 #### TV/Film
