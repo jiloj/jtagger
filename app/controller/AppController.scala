@@ -18,7 +18,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class AppController @Inject()(semcatDAO: SemanticCategoryDAO, appDAO: AppDAO, cc: ControllerComponents)
                              (implicit ec: ExecutionContext) extends AbstractController(cc) {
   private val logger = Logger("jnode")
-  private val taggers = mutable.Map.empty[String, Tagger[Clue]]
 
   /**
     * Tags a given question.
@@ -58,14 +57,7 @@ class AppController @Inject()(semcatDAO: SemanticCategoryDAO, appDAO: AppDAO, cc
       taggerName <- taggerNameOpt
       clue <- clueOpt
     } yield {
-      val tagger = if (taggers.contains(taggerName)) {
-        taggers(taggerName)
-      } else {
-        val tagger = NaiveBayesTagger.load(taggerName)
-        taggers += taggerName -> tagger
-        tagger
-      }
-
+      val tagger = NaiveBayesTagger.load("taggers/" + taggerName)
       tagger.tag(clue)
     }
 

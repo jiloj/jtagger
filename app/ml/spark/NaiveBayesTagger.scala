@@ -7,7 +7,7 @@ import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.classification.NaiveBayes
 import org.apache.spark.ml.feature._
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.concat_ws
+import org.apache.spark.sql.functions.lit
 
 /**
   * The bare tagger functionality.
@@ -28,12 +28,12 @@ class NaiveBayesTagger private (val model: PipelineModel) extends Tagger[Clue] {
     import spark.implicits._
 
     val df = Seq(input).map { clue =>
-      Clue.unapply(clue).get
-    }.toDF("question", "answer", "category", "value", "round")
+      val clueTup = Clue.unapply(clue).get
+      (clueTup._1, clueTup._2, clueTup._3, clueTup._4, clueTup._5, 0)
+    }.toDF("question", "answer", "category", "value", "round", "label")
     val classification = model.transform(df)
 
-    val semcat = classification.first().getAs[Double]("prediction").toInt
-
+    val semcat = classification.orderBy("probability").first().getAs[Double]("prediction").toInt
     semcat
   }
 }
@@ -62,10 +62,8 @@ object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
       (c.question, c.answer, c.category, c.value, c.round, kvp._2)
     }.toDF("question", "answer", "category", "value", "round", "label")
 
-    // Add all the text columns together.
-    val transDF = df
-      .select(concat_ws(" ", $"question", $"answer", $"category"), $"value", $"round", $"label")
-      .withColumnRenamed("concat_ws( , question, answer, category)", "combined_text")
+    val sqlTransformer = new SQLTransformer()
+      .setStatement("SELECT concat_ws(\" \", question, answer, category) as combined_text, value, round, label FROM __THIS__")
 
     // Create my pipeline stages.
     val tokenizer = new Tokenizer()
@@ -79,12 +77,10 @@ object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
     val naiveBayes = new NaiveBayes()
       .setModelType("multinomial")
       .setSmoothing(1)
-      .setFeaturesCol("features")
-      .setLabelCol("label")
 
     val classifierPipeline = new Pipeline()
-      .setStages(Array(tokenizer, counter, naiveBayes))
-    val model = classifierPipeline.fit(transDF)
+      .setStages(Array(sqlTransformer, tokenizer, counter, naiveBayes))
+    val model = classifierPipeline.fit(df)
     new NaiveBayesTagger(model)
   }
 
