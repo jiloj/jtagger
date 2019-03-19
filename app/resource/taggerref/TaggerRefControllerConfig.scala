@@ -4,7 +4,7 @@ import javax.inject.Inject
 import model.base.TaggerRef
 import model.dao.{SemanticCategoryDAO, TaggerDAO}
 import net.logstash.logback.marker.LogstashMarker
-import play.api.{Logger, MarkerContext}
+import play.api.{Configuration, Logger, MarkerContext}
 import play.api.http.{FileMimeTypes, HttpVerbs}
 import play.api.i18n.{Langs, MessagesApi}
 import play.api.mvc._
@@ -95,7 +95,8 @@ case class TaggerRefControllerComponents @Inject()(taggerActionBuilder: TaggerRe
                                                    messagesApi: MessagesApi,
                                                    langs: Langs,
                                                    fileMimeTypes: FileMimeTypes,
-                                                   executionContext: scala.concurrent.ExecutionContext)
+                                                   executionContext: scala.concurrent.ExecutionContext,
+                                                   config: Configuration)
   extends ControllerComponents
 
 /**
