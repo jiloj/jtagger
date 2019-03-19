@@ -1,11 +1,13 @@
 package resource.taggerref
 
+import java.nio.file.Paths
 import java.time.LocalDate
 
+import com.typesafe.config.Config
 import javax.inject.Inject
 import ml.spark.NaiveBayesTagger
 import model.base.{Clue, TaggerRef}
-import play.api.Logger
+import play.api.{Configuration, Logger}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc._
 import util.FutureUtil
@@ -66,7 +68,8 @@ class TaggerRefController @Inject()(cc: TaggerRefControllerComponents)(implicit 
 
         FutureUtil.mappingKey[Clue, Int](training).map { resolved =>
           val tagger = NaiveBayesTagger.create(resolved)
-          NaiveBayesTagger.persist(tagger, name)
+          val taggerPath = determineTaggerPath(name)
+          NaiveBayesTagger.persist(tagger, taggerPath)
           resourceHandler.insert(TaggerRef(name, LocalDate.now()))
 
           Ok(Json.obj("success" -> true, "msg" -> s"$name tagger successfully created."))
@@ -93,5 +96,16 @@ class TaggerRefController @Inject()(cc: TaggerRefControllerComponents)(implicit 
     resourceHandler.lookup(id).map { taggerRefResource =>
       Ok(Json.toJson(taggerRefResource))
     }
+  }
+
+  /**
+    * Determines the path for a Tagger with a given name given the current configuration settings.
+    *
+    * @param name The name of the Tagger we are getting the path for.
+    * @return The string representation of the Tagger's path.
+    */
+  private def determineTaggerPath(name: String): String = {
+    val path = cc.config.get[Configuration]("tagger").get[String]("path")
+    Paths.get(path, name).toAbsolutePath.toString
   }
 }

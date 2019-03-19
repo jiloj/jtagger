@@ -4,6 +4,7 @@ logs
 target
 out
 spark-warehouse
+
 /.idea
 /.idea_modules
 /.classpath
@@ -17,3 +18,6 @@ spark-warehouse
 *.class
 .*.swp
 .DS_Store
+
+# Tagger files
+taggers/
