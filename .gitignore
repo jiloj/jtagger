@@ -1,10 +1,10 @@
 # Folders
-build
-logs
-target
-out
-spark-warehouse
-
+/build
+/logs
+/target
+/out
+/spark-warehouse
+/project
 /.idea
 /.idea_modules
 /.classpath
@@ -20,4 +20,4 @@ spark-warehouse
 .DS_Store
 
 # Tagger files
-taggers/
+/taggers/
