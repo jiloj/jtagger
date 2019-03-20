@@ -24,14 +24,8 @@ class AppController @Inject()(semcatDAO: SemanticCategoryDAO, appDAO: AppDAO, cc
     *
     * @return The tagged category result.
     */
-  def tag: Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def tag: Action[JsValue] = Action(parse.json) { implicit request =>
     logger.info("AppController#tag")
-
-    val semanticCatsIdToTextFuture = semcatDAO.all.map { semcats =>
-      semcats.map { semcat =>
-        semcat.id -> semcat.text
-      }.toMap
-    }
 
     val taggerNameOpt = (request.body \ "tagger").asOpt[String]
 
@@ -61,13 +55,10 @@ class AppController @Inject()(semcatDAO: SemanticCategoryDAO, appDAO: AppDAO, cc
       tagger.tag(clue)
     }
 
-    semanticCatsIdToTextFuture.map { semanticCatsIdToText =>
-      tagResultOpt.map { tagResult =>
-        val semcatText = semanticCatsIdToText(tagResult)
-        Ok(Json.obj("semanticcategory" -> semcatText))
-      }.getOrElse {
-        BadRequest(Json.obj("success" -> false, "msg" -> "There was an error in the request."))
-      }
+    tagResultOpt.map { tagResult =>
+      Ok(Json.obj("semanticcategory" -> tagResult))
+    }.getOrElse {
+      BadRequest(Json.obj("success" -> false, "msg" -> "There was an error in the request."))
     }
   }
 

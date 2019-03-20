@@ -7,7 +7,6 @@ import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.classification.NaiveBayes
 import org.apache.spark.ml.feature._
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.lit
 
 /**
   * The bare tagger functionality.
@@ -19,7 +18,7 @@ class NaiveBayesTagger private (val model: PipelineModel) extends Tagger[Clue] {
     * @param input The input clue that is to be tagged.
     * @return The semantic category label that is the result of the transformation.
     */
-  def tag(input: Clue): Int = {
+  def tag(input: Clue): String = {
     val spark = SparkSession
       .builder
       .appName("jtagger")
@@ -29,12 +28,13 @@ class NaiveBayesTagger private (val model: PipelineModel) extends Tagger[Clue] {
 
     val df = Seq(input).map { clue =>
       val clueTup = Clue.unapply(clue).get
-      (clueTup._1, clueTup._2, clueTup._3, clueTup._4, clueTup._5, 0)
+      (clueTup._1, clueTup._2, clueTup._3, clueTup._4, clueTup._5, "unknown")
     }.toDF("question", "answer", "category", "value", "round", "label")
+    df.show()
     val classification = model.transform(df)
+    classification.show()
 
-    val semcat = classification.orderBy("probability").first().getAs[Double]("prediction").toInt
-    semcat
+    classification.orderBy("probability").first().getAs[String]("prediction")
   }
 }
 
@@ -55,12 +55,21 @@ object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
     * @param train The map from input to output to serve as training data.
     * @return The created Tagger from the provided training data.
     */
-  override def create(train: Map[Clue, Int]): NaiveBayesTagger = {
+  override def create(train: Map[Clue, String]): NaiveBayesTagger = {
     // Map the training data to a DataFrame.
     val df = train.toSeq.map { kvp =>
       val c = kvp._1
       (c.question, c.answer, c.category, c.value, c.round, kvp._2)
     }.toDF("question", "answer", "category", "value", "round", "label")
+
+    // Fit this separately and create a model so that it can be referenced in the IndexToString stage
+    val indexer = new StringIndexer()
+      .setInputCol("label")
+      .setOutputCol("indexed_label")
+      .setHandleInvalid("keep") // TODO: find out the string to use for putting things in an additional bucket. If our
+                                // TODO: actual runtime data has something we haven't seen then just put it into other
+    // TODO: Is there a way to get rid of this annoying need to include label when classifying real data.
+    val indexerModel = indexer.fit(df)
 
     val sqlTransformer = new SQLTransformer()
       .setStatement("SELECT concat_ws(\" \", question, answer, category) as combined_text, value, round, label FROM __THIS__")
@@ -77,9 +86,18 @@ object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
     val naiveBayes = new NaiveBayes()
       .setModelType("multinomial")
       .setSmoothing(1)
+      .setFeaturesCol("features")
+      .setLabelCol("indexed_label")
+      .setPredictionCol("prediction_index")
+      .setProbabilityCol("probability")
+
+    val deindexer = new IndexToString()
+      .setInputCol("prediction_index")
+      .setOutputCol("prediction")
+      .setLabels(indexerModel.labels)
 
     val classifierPipeline = new Pipeline()
-      .setStages(Array(sqlTransformer, tokenizer, counter, naiveBayes))
+      .setStages(Array(sqlTransformer, tokenizer, counter, indexerModel, naiveBayes, deindexer))
     val model = classifierPipeline.fit(df)
     new NaiveBayesTagger(model)
   }
