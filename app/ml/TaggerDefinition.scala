@@ -15,7 +15,7 @@ trait TaggerDefinition[A <: Tagger[B], B] {
     * @param train The map from input to category id to serve as training data.
     * @return The created Tagger from the provided training data.
     */
-  def create(train: Map[B, Int]): A
+  def create(train: Map[B, String]): A
 
   /**
     * Marshal a given Tagger to a file.

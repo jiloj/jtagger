@@ -1,16 +1,16 @@
 package ml
 
 /**
-  * Defines a Tagger interface to convert an input to an output.
+  * Defines a Tagger interface to label a given input to an output label.
   *
   * @tparam A The input type.
   */
 trait Tagger[A] {
   /**
-    * Tag or transform the input to the output.
+    * Tag the input to a corresponding output label.
     *
-    * @param obj The input object to transform.
-    * @return The id of the output category.
+    * @param obj The input object to label.
+    * @return The output category label.
     */
-  def tag(obj: A): Int
+  def tag(obj: A): String
 }

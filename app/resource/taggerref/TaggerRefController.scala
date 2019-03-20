@@ -3,7 +3,6 @@ package resource.taggerref
 import java.nio.file.Paths
 import java.time.LocalDate
 
-import com.typesafe.config.Config
 import javax.inject.Inject
 import ml.spark.NaiveBayesTagger
 import model.base.{Clue, TaggerRef}
@@ -45,41 +44,33 @@ class TaggerRefController @Inject()(cc: TaggerRefControllerComponents)(implicit 
   def process: Action[JsValue] = TaggerRefAction.async(parse.json) { implicit request =>
     logger.trace("TaggerRefController#process")
 
-    val semanticCatTextToIdFuture = semanticCatDAO.all.map { semcats =>
-      semcats.map { semcat =>
-        semcat.text -> semcat.id
-      }.toMap
-    }
-
     val nameOpt = (request.body \ "name").asOpt[String]
     val dataOpt = (request.body \ "data").asOpt[JsObject]
 
-    semanticCatTextToIdFuture.flatMap { semanticCatsTextToId =>
-      val taggerResult = for {
-        data <- dataOpt
-        name <- nameOpt
-      } yield {
-        val training = data.value.map { kvp =>
-          val clueId = kvp._1.toInt
-          val semcatLabel = kvp._2.as[String]
+    val taggerResult = for {
+      data <- dataOpt
+      name <- nameOpt
+    } yield {
+      val training = data.value.map { kvp =>
+        val clueId = kvp._1.toInt
+        val label = kvp._2.as[String]
 
-          (jnode.clue(clueId), semanticCatsTextToId(semcatLabel))
-        }
-
-        FutureUtil.mappingKey[Clue, Int](training).map { resolved =>
-          val tagger = NaiveBayesTagger.create(resolved)
-          val taggerPath = determineTaggerPath(name)
-          NaiveBayesTagger.persist(tagger, taggerPath)
-          resourceHandler.insert(TaggerRef(name, LocalDate.now()))
-
-          Ok(Json.obj("success" -> true, "msg" -> s"$name tagger successfully created."))
-        }
+        (jnode.clue(clueId), label)
       }
 
-      taggerResult.getOrElse {
-        Future.successful {
-          BadRequest(Json.obj("msg" -> "No `data` field in the request json."))
-        }
+      FutureUtil.mappingKey[Clue, String](training).map { resolved =>
+        val tagger = NaiveBayesTagger.create(resolved)
+        val taggerPath = determineTaggerPath(name)
+        NaiveBayesTagger.persist(tagger, taggerPath)
+        resourceHandler.insert(TaggerRef(name, LocalDate.now()))
+
+        Ok(Json.obj("success" -> true, "msg" -> s"$name tagger successfully created."))
+      }
+    }
+
+    taggerResult.getOrElse {
+      Future.successful {
+        BadRequest(Json.obj("msg" -> "No `data` field in the request json."))
       }
     }
   }
