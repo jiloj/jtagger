@@ -2,7 +2,7 @@ package resource.taggerref
 
 import javax.inject.Inject
 import model.base.TaggerRef
-import model.dao.{SemanticCategoryDAO, TaggerDAO}
+import model.dao.TaggerDAO
 import net.logstash.logback.marker.LogstashMarker
 import play.api.{Configuration, Logger, MarkerContext}
 import play.api.http.{FileMimeTypes, HttpVerbs}
@@ -88,7 +88,6 @@ class TaggerRefActionBuilder @Inject()(messagesApi: MessagesApi, playBodyParsers
  */
 case class TaggerRefControllerComponents @Inject()(taggerActionBuilder: TaggerRefActionBuilder,
                                                    taggerRefDAO: TaggerDAO,
-                                                   semanticCatDAO: SemanticCategoryDAO,
                                                    jnode: JNode,
                                                    actionBuilder: DefaultActionBuilder,
                                                    parsers: PlayBodyParsers,
@@ -109,7 +108,6 @@ class TaggerRefBaseController @Inject()(tcc: TaggerRefControllerComponents)
 
   def TaggerRefAction: TaggerRefActionBuilder = tcc.taggerActionBuilder
   def jnode: JNode = tcc.jnode
-  def semanticCatDAO: SemanticCategoryDAO = tcc.semanticCatDAO
 
   def resourceHandler: WritableResourceHandler[TaggerRef, TaggerRefResource] =
     new WritableResourceHandler[TaggerRef, TaggerRefResource](tcc.taggerRefDAO, createTaggerRefResource)
