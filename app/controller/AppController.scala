@@ -1,21 +1,21 @@
 package controller
 
+import java.nio.file.Paths
+
 import javax.inject.Inject
-import ml.Tagger
 import ml.spark.NaiveBayesTagger
-import model.base.{Clue, SemanticCategory}
+import model.base.Clue
 import model.dao.{AppDAO, SemanticCategoryDAO}
-import play.api.Logger
+import play.api.{Configuration, Logger}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 
-import scala.collection.mutable
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 /**
   *  The main AppController to interface with the different taggers.
   */
-class AppController @Inject()(semcatDAO: SemanticCategoryDAO, appDAO: AppDAO, cc: ControllerComponents)
+class AppController @Inject()(semcatDAO: SemanticCategoryDAO, appDAO: AppDAO, config: Configuration, cc: ControllerComponents)
                              (implicit ec: ExecutionContext) extends AbstractController(cc) {
   private val logger = Logger("jnode")
 
@@ -51,7 +51,9 @@ class AppController @Inject()(semcatDAO: SemanticCategoryDAO, appDAO: AppDAO, cc
       taggerName <- taggerNameOpt
       clue <- clueOpt
     } yield {
-      val tagger = NaiveBayesTagger.load("taggers/" + taggerName)
+      val taggerRoot = config.get[Configuration]("tagger").get[String]("path")
+      val taggerPath = Paths.get(taggerRoot, taggerName).toString
+      val tagger = NaiveBayesTagger.load(taggerPath)
       tagger.tag(clue)
     }
 
