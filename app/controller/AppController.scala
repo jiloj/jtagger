@@ -51,7 +51,7 @@ class AppController @Inject()(semcatDAO: SemanticCategoryDAO, appDAO: AppDAO, co
       taggerName <- taggerNameOpt
       clue <- clueOpt
     } yield {
-      val taggerRoot = config.get[Configuration]("tagger").get[String]("path")
+      val taggerRoot = config.get[String]("tagger.path")
       val taggerPath = Paths.get(taggerRoot, taggerName).toString
       val tagger = NaiveBayesTagger.load(taggerPath)
       tagger.tag(clue)

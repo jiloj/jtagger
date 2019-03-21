@@ -96,7 +96,7 @@ class TaggerRefController @Inject()(cc: TaggerRefControllerComponents)(implicit 
     * @return The string representation of the Tagger's path.
     */
   private def determineTaggerPath(name: String): String = {
-    val path = cc.config.get[Configuration]("tagger").get[String]("path")
+    val path = cc.config.get[String]("tagger.path")
     Paths.get(path, name).toAbsolutePath.toString
   }
 }
