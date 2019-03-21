@@ -28,13 +28,11 @@ class NaiveBayesTagger private (val model: PipelineModel) extends Tagger[Clue] {
 
     val df = Seq(input).map { clue =>
       val clueTup = Clue.unapply(clue).get
-      (clueTup._1, clueTup._2, clueTup._3, clueTup._4, clueTup._5, "unknown")
+      (clueTup._1, clueTup._2, clueTup._3, clueTup._4, clueTup._5, "")
     }.toDF("question", "answer", "category", "value", "round", "label")
-    df.show()
     val classification = model.transform(df)
-    classification.show()
 
-    classification.orderBy("probability").first().getAs[String]("prediction")
+    classification.orderBy(NaiveBayesTagger.ProbabilityCol).first().getAs[String](NaiveBayesTagger.PredictionCol)
   }
 }
 
@@ -50,6 +48,12 @@ object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
   import spark.implicits._
 
   /**
+    * These constants define the column names for the prediction and probability info for each data item.
+    */
+  private val PredictionCol = "prediction"
+  private val ProbabilityCol = "probability"
+
+  /**
     * Creates a new tagger from the provided training dataset.
     *
     * @param train The map from input to output to serve as training data.
@@ -62,19 +66,17 @@ object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
       (c.question, c.answer, c.category, c.value, c.round, kvp._2)
     }.toDF("question", "answer", "category", "value", "round", "label")
 
-    // Fit this separately and create a model so that it can be referenced in the IndexToString stage
+    // Create my pipeline stages.
+    // Fit this separately and create a model so that it can be referenced in the IndexToString stage definition
     val indexer = new StringIndexer()
       .setInputCol("label")
       .setOutputCol("indexed_label")
-      .setHandleInvalid("keep") // TODO: find out the string to use for putting things in an additional bucket. If our
-                                // TODO: actual runtime data has something we haven't seen then just put it into other
-    // TODO: Is there a way to get rid of this annoying need to include label when classifying real data.
+      .setHandleInvalid("keep")
     val indexerModel = indexer.fit(df)
 
     val sqlTransformer = new SQLTransformer()
       .setStatement("SELECT concat_ws(\" \", question, answer, category) as combined_text, value, round, label FROM __THIS__")
 
-    // Create my pipeline stages.
     val tokenizer = new Tokenizer()
       .setInputCol("combined_text")
       .setOutputCol("tokens")
