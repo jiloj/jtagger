@@ -1,7 +1,7 @@
 package model.base
 
 /**
-  * A Clue definition that will be used, for example in the ml input to provide SemanticCategory outputs.
+  * A Clue definition that will be used, for example in the ml input to provide a semantic category outputs.
   *
   * @param question The question text that a player is prompted with.
   * @param answer The answer that the player provides.
