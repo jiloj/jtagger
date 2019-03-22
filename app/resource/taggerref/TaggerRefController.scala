@@ -6,7 +6,7 @@ import java.time.LocalDate
 import javax.inject.Inject
 import ml.spark.NaiveBayesTagger
 import model.base.{Clue, TaggerRef}
-import play.api.{Configuration, Logger}
+import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc._
 import util.FutureUtil
