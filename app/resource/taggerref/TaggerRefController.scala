@@ -3,6 +3,9 @@ package resource.taggerref
 import java.nio.file.Paths
 import java.time.LocalDate
 
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{Sink, Source}
 import javax.inject.Inject
 import ml.spark.NaiveBayesTagger
 import model.base.{Clue, TaggerRef}
@@ -11,7 +14,9 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc._
 import util.FutureUtil
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.language.postfixOps
+import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext}
 
 /**
   * Defines the behavior for the TaggerRef API endpoints, such as listing, retrieving, and creating.
@@ -19,9 +24,10 @@ import scala.concurrent.{ExecutionContext, Future}
   * @param cc The controller components.
   * @param ec The execution context for this controller.
   */
-class TaggerRefController @Inject()(cc: TaggerRefControllerComponents)(implicit ec: ExecutionContext)
+class TaggerRefController @Inject()(cc: TaggerRefControllerComponents)(implicit ec: ExecutionContext, actorSystem: ActorSystem)
     extends TaggerRefBaseController(cc) {
   private val logger = Logger("jtagger")
+  private implicit val mat = ActorMaterializer()
 
   /**
     * List all the available TaggerRefs on the store.
@@ -41,37 +47,53 @@ class TaggerRefController @Inject()(cc: TaggerRefControllerComponents)(implicit 
     *
     * @return The info of the new created TaggerRef.
     */
-  def process: Action[JsValue] = TaggerRefAction.async(parse.json) { implicit request =>
+  def process: Action[JsValue] = TaggerRefAction(parse.json) { implicit request =>
     logger.trace("TaggerRefController#process")
 
     val nameOpt = (request.body \ "name").asOpt[String]
     val dataOpt = (request.body \ "data").asOpt[JsObject]
 
     val taggerResult = for {
-      data <- dataOpt
       name <- nameOpt
+      data <- dataOpt
     } yield {
-      val training = data.value.map { kvp =>
-        val clueId = kvp._1.toInt
-        val label = kvp._2.as[String]
+      createTagger(name, data)
+      Ok(Json.obj("success" -> true, "msg" -> s"$name tagger successfully created."))
+    }
 
-        (jnode.clue(clueId), label)
-      }
+    taggerResult.getOrElse {
+      BadRequest(Json.obj("msg" -> "No `data` field in the request json."))
+    }
+  }
 
-      FutureUtil.mappingKey[Clue, String](training).map { resolved =>
+  /**
+    * Logic to create a tagger given a specified name and training data.
+    *
+    * @param name The name to give the tagger.
+    * @param data The data to train the tagger.
+    */
+  def createTagger(name: String, data: JsObject) {
+    scheduleLongRunningTask {
+      val training = Source
+        .fromIterator(() => data.value.iterator)
+        .map(tup => (tup._1.toInt, tup._2.as[String]))
+        .mapAsync(4) { case (clueId, label) =>
+          jnode.clue(clueId).map((_, label))
+        }
+        .runWith(Sink.seq)
+        .map(_.toMap)
+
+      val x = training.map { resolved =>
+        println("Now in here")
         val tagger = NaiveBayesTagger.create(resolved)
         val taggerPath = determineTaggerPath(name)
         NaiveBayesTagger.persist(tagger, taggerPath)
         resourceHandler.insert(TaggerRef(name, LocalDate.now()))
 
-        Ok(Json.obj("success" -> true, "msg" -> s"$name tagger successfully created."))
+        logger.trace(s"Finished creating tagger $name")
       }
-    }
 
-    taggerResult.getOrElse {
-      Future.successful {
-        BadRequest(Json.obj("msg" -> "No `data` field in the request json."))
-      }
+      Await.ready(x, Duration.Inf)
     }
   }
 
@@ -98,5 +120,14 @@ class TaggerRefController @Inject()(cc: TaggerRefControllerComponents)(implicit 
   private def determineTaggerPath(name: String): String = {
     val path = cc.config.get[Configuration]("tagger").get[String]("path")
     Paths.get(path, name).toAbsolutePath.toString
+  }
+
+  /**
+    * Schedules a code block on a long running thread through the akka actor system.
+    *
+    * @param f The task to run in a long running thread.
+    */
+  private def scheduleLongRunningTask(f: => Unit) {
+    actorSystem.scheduler.scheduleOnce(0 seconds)(f)
   }
 }
