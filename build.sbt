@@ -21,7 +21,10 @@ libraryDependencies += "org.apache.hadoop" % "hadoop-client" % "2.7.2"
 
 libraryDependencies += "com.chuusai" %% "shapeless" % "2.3.3"
 
-libraryDependencies += "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "1.0-RC1"
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-stream" % "2.5.21",
+  "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.21" % Test
+)
 
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % "2.3.2",
