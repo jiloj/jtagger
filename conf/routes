@@ -1,4 +1,6 @@
 POST       /tag                   controller.AppController.tag
 GET        /create                controller.AppController.create
 
+GET        /tasks/:id             controller.TaskController.show(id)
+
 ->         /taggerrefs            resource.taggerref.TaggerRefRouter

@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext
   */
 class AppController @Inject()(appDAO: AppDAO, config: Configuration, cc: ControllerComponents)
                              (implicit ec: ExecutionContext) extends AbstractController(cc) {
-  private val logger = Logger("jnode")
+  private val logger = Logger("jtagger")
 
   /**
     * Tags a given question.
