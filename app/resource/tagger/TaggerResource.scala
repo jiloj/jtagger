@@ -1,4 +1,4 @@
-package resource.taggerref
+package resource.tagger
 
 import java.time.LocalDate
 
@@ -10,17 +10,17 @@ import play.api.libs.json.{JsValue, Json, Writes}
   * @param name
   * @param created
   */
-case class TaggerRefResource(id: Int, name: String, created: LocalDate)
+case class TaggerResource(id: Int, name: String, created: LocalDate)
 
 /**
   *
   */
-object TaggerRefResource {
+object TaggerResource {
   /**
     *
     */
-  implicit val implicitWrites = new Writes[TaggerRefResource] {
-    def writes(resource: TaggerRefResource): JsValue = {
+  implicit val implicitWrites = new Writes[TaggerResource] {
+    def writes(resource: TaggerResource): JsValue = {
       Json.obj(
         "id" -> resource.id,
         "name" -> resource.name,
