@@ -1,7 +1,7 @@
 package ml.spark
 
 import scala.collection.Map
-import ml.{Tagger, TaggerDefinition}
+import ml.{Model, ModelDefinition}
 import model.base.Clue
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.classification.NaiveBayes
@@ -11,14 +11,14 @@ import org.apache.spark.sql.SparkSession
 /**
   * The bare tagger functionality.
   */
-class NaiveBayesTagger private (val model: PipelineModel) extends Tagger[Clue] {
+class NaiveBayesTagger private (val model: PipelineModel) extends Model[Clue, String] {
   /**
     * Tag an input with a given output label.
     *
     * @param input The input clue that is to be tagged.
     * @return The semantic category label that is the result of the transformation.
     */
-  def tag(input: Clue): String = {
+  def apply(input: Clue): String = {
     val spark = SparkSession
       .builder
       .appName("jtagger")
@@ -39,7 +39,7 @@ class NaiveBayesTagger private (val model: PipelineModel) extends Tagger[Clue] {
 /**
   * Definition of the NaiveBayesTagger creation and persistence and lifetime behavior.
   */
-object NaiveBayesTagger extends TaggerDefinition[NaiveBayesTagger, Clue] {
+object NaiveBayesTagger extends ModelDefinition[NaiveBayesTagger, Clue, String] {
   val spark = SparkSession
     .builder
     .appName("jtagger")

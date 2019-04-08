@@ -1,23 +1,21 @@
-package resource.taggerref
+package resource.tagger
 
 import java.nio.file.Paths
 import java.time.LocalDate
-import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import javax.inject.Inject
 import ml.spark.NaiveBayesTagger
-import model.base.TaggerRef
+import model.base.Tagger
 import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc._
 import task.TaskTracker
 
 import scala.language.postfixOps
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Defines the behavior for the TaggerRef API endpoints, such as listing, retrieving, and creating.
@@ -25,8 +23,8 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   * @param cc The controller components.
   * @param ec The execution context for this controller.
   */
-class TaggerRefController @Inject()(taskTracker: TaskTracker, cc: TaggerRefControllerComponents)(implicit ec: ExecutionContext, actorSystem: ActorSystem)
-    extends TaggerRefBaseController(cc) {
+class TaggerController @Inject()(taskTracker: TaskTracker, cc: TaggerControllerComponents)(implicit ec: ExecutionContext, actorSystem: ActorSystem)
+    extends TaggerBaseController(cc) {
   private val logger = Logger("jtagger")
   private implicit val mat = ActorMaterializer()
 
@@ -35,7 +33,7 @@ class TaggerRefController @Inject()(taskTracker: TaskTracker, cc: TaggerRefContr
     *
     * @return All the TaggerRefs information.
     */
-  def index: Action[AnyContent] = TaggerRefAction.async { implicit request =>
+  def index: Action[AnyContent] = TaggerAction.async { implicit request =>
     logger.trace(s"TaggerRefController#index: ")
 
     resourceHandler.all.map { taggerRefs =>
@@ -48,7 +46,7 @@ class TaggerRefController @Inject()(taskTracker: TaskTracker, cc: TaggerRefContr
     *
     * @return The info of the new created TaggerRef.
     */
-  def process: Action[JsValue] = TaggerRefAction(parse.json) { implicit request =>
+  def process: Action[JsValue] = TaggerAction(parse.json) { implicit request =>
     logger.trace("TaggerRefController#process")
 
     val nameOpt = (request.body \ "name").asOpt[String]
@@ -92,7 +90,7 @@ class TaggerRefController @Inject()(taskTracker: TaskTracker, cc: TaggerRefContr
       val tagger = NaiveBayesTagger.create(resolved)
       val taggerPath = determineTaggerPath(name)
       NaiveBayesTagger.persist(tagger, taggerPath)
-      resourceHandler.insert(TaggerRef(name, LocalDate.now()))
+      resourceHandler.insert(Tagger(name, name, LocalDate.now()))
 
       logger.trace(s"Finished creating tagger $name")
     }
@@ -104,7 +102,7 @@ class TaggerRefController @Inject()(taskTracker: TaskTracker, cc: TaggerRefContr
     * @param id The id of the requested Tagger.
     * @return The appropriate resource view of the Tagger.
     */
-  def show(id: Int): Action[AnyContent] = TaggerRefAction.async { implicit request =>
+  def show(id: Int): Action[AnyContent] = TaggerAction.async { implicit request =>
     logger.trace(s"TaggerRefController#show\\$id: ")
 
     resourceHandler.lookup(id).map { taggerRefResource =>

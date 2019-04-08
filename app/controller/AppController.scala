@@ -54,7 +54,7 @@ class AppController @Inject()(appDAO: AppDAO, config: Configuration, cc: Control
       val taggerRoot = config.get[String]("tagger.path")
       val taggerPath = Paths.get(taggerRoot, taggerName).toString
       val tagger = NaiveBayesTagger.load(taggerPath)
-      tagger.tag(clue)
+      tagger(clue)
     }
 
     tagResultOpt.map { tagResult =>
