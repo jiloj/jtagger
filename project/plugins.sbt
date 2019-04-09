@@ -10,3 +10,6 @@ addSbtPlugin("io.gatling" % "gatling-sbt" % "2.2.2")
 
 // Scala formatting: "sbt scalafmt"
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.0.0")
+
+// Scala linter
+addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.4.1")
