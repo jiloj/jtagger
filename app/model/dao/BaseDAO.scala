@@ -8,6 +8,7 @@ import scala.concurrent.Future
   * @tparam A The model type to interface with.
   */
 trait AllDAO[A] {
+
   /**
     * Provides all elements in the persistence layer.
     *
@@ -22,6 +23,7 @@ trait AllDAO[A] {
   * @tparam A The model to type to interface with.
   */
 trait InsertableDAO[A] {
+
   /**
     * Inserts a given type in the persistence layer.
     *
@@ -37,6 +39,7 @@ trait InsertableDAO[A] {
   * @tparam A The model type to interface with.
   */
 trait LookupableDAO[A] {
+
   /**
     * Lookup a given item in the persistence layer by its id.
     *

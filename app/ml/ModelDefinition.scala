@@ -10,6 +10,7 @@ import scala.collection.Map
   * @tparam C The output type of the model.
   */
 trait ModelDefinition[A <: Model[B, C], B, C] {
+
   /**
     * Creates a new model given the provided training data.
     *

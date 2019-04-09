@@ -12,7 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * @param ws The ws client from the play framework to make requests with.
   * @param ec The execution context to run the service requests on.
   */
-class JNode @Inject()(ws: WSClient) (implicit ec: ExecutionContext) {
+class JNode @Inject()(ws: WSClient)(implicit ec: ExecutionContext) {
   def clue(id: Int): Future[Clue] = {
     for {
       clueResponse <- ws.url(JNode.clueURL(id)).get
@@ -33,6 +33,7 @@ class JNode @Inject()(ws: WSClient) (implicit ec: ExecutionContext) {
   * The object instance for the Jnode service.
   */
 object JNode {
+
   /**
     * Returns the resource URL for a clue with a given id.
     *

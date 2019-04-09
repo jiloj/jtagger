@@ -17,12 +17,12 @@ import scala.concurrent.Future
   * @param dbConfigProvider The provider for the database configuration.
   */
 class TaggerDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
-  extends HasDatabaseConfigProvider[JdbcProfile]
+    extends HasDatabaseConfigProvider[JdbcProfile]
     with AllDAO[Tagger]
     with InsertableDAO[Tagger]
     with LookupableDAO[Tagger] {
   private val InsertTaggerQuery = Taggers returning Taggers.map(_.id) into
-    ((tagger, id) => tagger.copy(id=id))
+    ((tagger, id) => tagger.copy(id = id))
 
   /**
     * Provides all the Taggers in the persistence layer.

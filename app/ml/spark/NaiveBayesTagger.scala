@@ -12,6 +12,7 @@ import org.apache.spark.sql.SparkSession
   * The bare tagger functionality.
   */
 class NaiveBayesTagger private (val model: PipelineModel) extends Model[Clue, String] {
+
   /**
     * Tag an input with a given output label.
     *
@@ -19,20 +20,24 @@ class NaiveBayesTagger private (val model: PipelineModel) extends Model[Clue, St
     * @return The semantic category label that is the result of the transformation.
     */
   def apply(input: Clue): String = {
-    val spark = SparkSession
-      .builder
+    val spark = SparkSession.builder
       .appName("jtagger")
       .config("spark.master", "local")
       .getOrCreate()
     import spark.implicits._
 
-    val df = Seq(input).map { clue =>
-      val clueTup = Clue.unapply(clue).get
-      (clueTup._1, clueTup._2, clueTup._3, clueTup._4, clueTup._5, "")
-    }.toDF("question", "answer", "category", "value", "round", "label")
+    val df = Seq(input)
+      .map { clue =>
+        val clueTup = Clue.unapply(clue).get
+        (clueTup._1, clueTup._2, clueTup._3, clueTup._4, clueTup._5, "")
+      }
+      .toDF("question", "answer", "category", "value", "round", "label")
     val classification = model.transform(df)
 
-    classification.orderBy(NaiveBayesTagger.ProbabilityCol).first().getAs[String](NaiveBayesTagger.PredictionCol)
+    classification
+      .orderBy(NaiveBayesTagger.ProbabilityCol)
+      .first()
+      .getAs[String](NaiveBayesTagger.PredictionCol)
   }
 }
 
@@ -40,8 +45,7 @@ class NaiveBayesTagger private (val model: PipelineModel) extends Model[Clue, St
   * Definition of the NaiveBayesTagger creation and persistence and lifetime behavior.
   */
 object NaiveBayesTagger extends ModelDefinition[NaiveBayesTagger, Clue, String] {
-  val spark = SparkSession
-    .builder
+  val spark = SparkSession.builder
     .appName("jtagger")
     .config("spark.master", "local")
     .getOrCreate()
@@ -61,10 +65,12 @@ object NaiveBayesTagger extends ModelDefinition[NaiveBayesTagger, Clue, String] 
     */
   override def create(train: Map[Clue, String]): NaiveBayesTagger = {
     // Map the training data to a DataFrame.
-    val df = train.toSeq.map { kvp =>
-      val c = kvp._1
-      (c.question, c.answer, c.category, c.value, c.round, kvp._2)
-    }.toDF("question", "answer", "category", "value", "round", "label")
+    val df = train.toSeq
+      .map { kvp =>
+        val c = kvp._1
+        (c.question, c.answer, c.category, c.value, c.round, kvp._2)
+      }
+      .toDF("question", "answer", "category", "value", "round", "label")
 
     // Create my pipeline stages.
     // Fit this separately and create a model so that it can be referenced in the IndexToString stage definition
@@ -75,7 +81,9 @@ object NaiveBayesTagger extends ModelDefinition[NaiveBayesTagger, Clue, String] 
     val indexerModel = indexer.fit(df)
 
     val sqlTransformer = new SQLTransformer()
-      .setStatement("SELECT concat_ws(\" \", question, answer, category) as combined_text, value, round, label FROM __THIS__")
+      .setStatement(
+        "SELECT concat_ws(\" \", question, answer, category) as combined_text, value, round, label FROM __THIS__"
+      )
 
     val tokenizer = new Tokenizer()
       .setInputCol("combined_text")

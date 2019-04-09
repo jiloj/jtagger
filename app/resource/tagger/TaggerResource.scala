@@ -16,6 +16,7 @@ case class TaggerResource(id: Int, name: String, created: LocalDate)
   *
   */
 object TaggerResource {
+
   /**
     *
     */

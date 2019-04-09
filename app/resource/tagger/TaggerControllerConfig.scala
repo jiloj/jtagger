@@ -20,11 +20,13 @@ import scala.concurrent.{ExecutionContext, Future}
   * security credentials, and useful shortcut methods.
   */
 trait TaggerRequestHeader extends MessagesRequestHeader with PreferredMessagesProvider
-class TaggerRequest[A](request: Request[A], val messagesApi: MessagesApi) extends WrappedRequest(request) with TaggerRequestHeader
+class TaggerRequest[A](request: Request[A], val messagesApi: MessagesApi)
+    extends WrappedRequest(request)
+    with TaggerRequestHeader
 
 /**
- * Provides an implicit marker that will show the request in all logger statements.
- */
+  * Provides an implicit marker that will show the request in all logger statements.
+  */
 trait RequestMarkerContext {
   import net.logstash.logback.marker.Markers
 
@@ -36,7 +38,9 @@ trait RequestMarkerContext {
 
   implicit def requestHeaderToMarkerContext(implicit request: RequestHeader): MarkerContext = {
     MarkerContext {
-      marker("id" -> request.id) && marker("host" -> request.host) && marker("remoteAddress" -> request.remoteAddress)
+      marker("id" -> request.id) && marker("host" -> request.host) && marker(
+        "remoteAddress" -> request.remoteAddress
+      )
     }
   }
 
@@ -49,9 +53,9 @@ trait RequestMarkerContext {
   * the request with contextual data, and manipulate the
   * result.
   */
-class TaggerActionBuilder @Inject()(messagesApi: MessagesApi, playBodyParsers: PlayBodyParsers)
-                                   (implicit val executionContext: ExecutionContext)
-    extends ActionBuilder[TaggerRequest, AnyContent]
+class TaggerActionBuilder @Inject()(messagesApi: MessagesApi, playBodyParsers: PlayBodyParsers)(
+    implicit val executionContext: ExecutionContext
+) extends ActionBuilder[TaggerRequest, AnyContent]
     with RequestMarkerContext
     with HttpVerbs {
   private val logger = Logger("jtagger")
@@ -60,9 +64,7 @@ class TaggerActionBuilder @Inject()(messagesApi: MessagesApi, playBodyParsers: P
 
   type TaggerRequestBlock[A] = TaggerRequest[A] => Future[Result]
 
-
-  override def invokeBlock[A](request: Request[A],
-                              block: TaggerRequestBlock[A]): Future[Result] = {
+  override def invokeBlock[A](request: Request[A], block: TaggerRequestBlock[A]): Future[Result] = {
     // Convert to marker context and use request in block
     implicit val markerContext: MarkerContext = requestHeaderToMarkerContext(request)
     logger.trace(s"TaggerRefActionBuilder#invokeBlock: ")
@@ -81,29 +83,30 @@ class TaggerActionBuilder @Inject()(messagesApi: MessagesApi, playBodyParsers: P
 }
 
 /**
- * Packages up the component dependencies for the post controller.
- *
- * This is a good way to minimize the surface area exposed to the controller, so the
- * controller only has to have one thing injected.
- */
-case class TaggerControllerComponents @Inject()(taggerActionBuilder: TaggerActionBuilder,
-                                                taggerRefDAO: TaggerDAO,
-                                                jnode: JNode,
-                                                actionBuilder: DefaultActionBuilder,
-                                                parsers: PlayBodyParsers,
-                                                messagesApi: MessagesApi,
-                                                langs: Langs,
-                                                fileMimeTypes: FileMimeTypes,
-                                                executionContext: scala.concurrent.ExecutionContext,
-                                                config: Configuration)
-  extends ControllerComponents
+  * Packages up the component dependencies for the post controller.
+  *
+  * This is a good way to minimize the surface area exposed to the controller, so the
+  * controller only has to have one thing injected.
+  */
+case class TaggerControllerComponents @Inject()(
+    taggerActionBuilder: TaggerActionBuilder,
+    taggerRefDAO: TaggerDAO,
+    jnode: JNode,
+    actionBuilder: DefaultActionBuilder,
+    parsers: PlayBodyParsers,
+    messagesApi: MessagesApi,
+    langs: Langs,
+    fileMimeTypes: FileMimeTypes,
+    executionContext: scala.concurrent.ExecutionContext,
+    config: Configuration
+) extends ControllerComponents
 
 /**
- * Exposes actions and handler to the PostController by wiring the injected state into the base class.
- */
-class TaggerBaseController @Inject()(tcc: TaggerControllerComponents)
-                                    (implicit ec: ExecutionContext)
-  extends BaseController with RequestMarkerContext {
+  * Exposes actions and handler to the PostController by wiring the injected state into the base class.
+  */
+class TaggerBaseController @Inject()(tcc: TaggerControllerComponents)(implicit ec: ExecutionContext)
+    extends BaseController
+    with RequestMarkerContext {
   override protected def controllerComponents: ControllerComponents = tcc
 
   def TaggerAction: TaggerActionBuilder = tcc.taggerActionBuilder

@@ -15,8 +15,9 @@ import scala.concurrent.ExecutionContext
 /**
   *  The main AppController to interface with the different taggers.
   */
-class AppController @Inject()(appDAO: AppDAO, config: Configuration, cc: ControllerComponents)
-                             (implicit ec: ExecutionContext) extends AbstractController(cc) {
+class AppController @Inject()(appDAO: AppDAO, config: Configuration, cc: ControllerComponents)(
+    implicit ec: ExecutionContext
+) extends AbstractController(cc) {
   private val logger = Logger("jtagger")
 
   /**
@@ -57,11 +58,13 @@ class AppController @Inject()(appDAO: AppDAO, config: Configuration, cc: Control
       tagger(clue)
     }
 
-    tagResultOpt.map { tagResult =>
-      Ok(Json.obj("semanticcategory" -> tagResult))
-    }.getOrElse {
-      BadRequest(Json.obj("success" -> false, "msg" -> "There was an error in the request."))
-    }
+    tagResultOpt
+      .map { tagResult =>
+        Ok(Json.obj("semanticcategory" -> tagResult))
+      }
+      .getOrElse {
+        BadRequest(Json.obj("success" -> false, "msg" -> "There was an error in the request."))
+      }
   }
 
   /**

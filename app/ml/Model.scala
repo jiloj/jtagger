@@ -7,6 +7,7 @@ package ml
   * @tparam B The output type.
   */
 trait Model[A, B] {
+
   /**
     * Use the model to compute some output from some input.
     *
