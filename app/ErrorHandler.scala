@@ -17,35 +17,35 @@ import scala.concurrent._
   *
   * https://www.playframework.com/documentation/latest/ScalaErrorHandling
   */
-class ErrorHandler(environment: Environment,
-                   configuration: Configuration,
-                   sourceMapper: Option[SourceMapper] = None,
-                   optionRouter: => Option[Router] = None)
-    extends DefaultHttpErrorHandler(environment,
-                                    configuration,
-                                    sourceMapper,
-                                    optionRouter) {
+class ErrorHandler(
+    environment: Environment,
+    configuration: Configuration,
+    sourceMapper: Option[SourceMapper] = None,
+    optionRouter: => Option[Router] = None
+) extends DefaultHttpErrorHandler(environment, configuration, sourceMapper, optionRouter) {
 
   private val logger =
     org.slf4j.LoggerFactory.getLogger("application.ErrorHandler")
 
   // This maps through Guice so that the above constructor can call methods.
   @Inject
-  def this(environment: Environment,
-           configuration: Configuration,
-           sourceMapper: OptionalSourceMapper,
-           router: Provider[Router]) = {
-    this(environment,
-         configuration,
-         sourceMapper.sourceMapper,
-         Some(router.get))
+  def this(
+      environment: Environment,
+      configuration: Configuration,
+      sourceMapper: OptionalSourceMapper,
+      router: Provider[Router]
+  ) = {
+    this(environment, configuration, sourceMapper.sourceMapper, Some(router.get))
   }
 
-  override def onClientError(request: RequestHeader,
-                             statusCode: Int,
-                             message: String): Future[Result] = {
+  override def onClientError(
+      request: RequestHeader,
+      statusCode: Int,
+      message: String
+  ): Future[Result] = {
     logger.debug(
-      s"onClientError: statusCode = $statusCode, uri = ${request.uri}, message = $message")
+      s"onClientError: statusCode = $statusCode, uri = ${request.uri}, message = $message"
+    )
 
     Future.successful {
       val result = statusCode match {
@@ -68,14 +68,15 @@ class ErrorHandler(environment: Environment,
 
   override protected def onDevServerError(
       request: RequestHeader,
-      exception: UsefulException): Future[Result] = {
-    Future.successful(
-      InternalServerError(Json.obj("exception" -> exception.toString)))
+      exception: UsefulException
+  ): Future[Result] = {
+    Future.successful(InternalServerError(Json.obj("exception" -> exception.toString)))
   }
 
   override protected def onProdServerError(
       request: RequestHeader,
-      exception: UsefulException): Future[Result] = {
+      exception: UsefulException
+  ): Future[Result] = {
     Future.successful(InternalServerError)
   }
 }

@@ -13,7 +13,8 @@ import scala.concurrent.Future
   */
 @Singleton
 class AppDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
-  extends HasDatabaseConfigProvider[JdbcProfile] {
+    extends HasDatabaseConfigProvider[JdbcProfile] {
+
   /**
     *
     * @return

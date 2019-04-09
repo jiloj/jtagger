@@ -10,14 +10,12 @@ import play.api.routing.Router
   *
   * https://www.playframework.com/documentation/2.5.x/ScalaHttpRequestHandlers#extending-the-default-request-handler
   */
-class RequestHandler @Inject()(router: Router,
-                               errorHandler: HttpErrorHandler,
-                               configuration: HttpConfiguration,
-                               filters: HttpFilters)
-    extends DefaultHttpRequestHandler(router,
-                                      errorHandler,
-                                      configuration,
-                                      filters) {
+class RequestHandler @Inject()(
+    router: Router,
+    errorHandler: HttpErrorHandler,
+    configuration: HttpConfiguration,
+    filters: HttpFilters
+) extends DefaultHttpRequestHandler(router, errorHandler, configuration, filters) {
 
   override def handlerForRequest(request: RequestHeader): (RequestHeader, Handler) = {
     super.handlerForRequest {
@@ -33,7 +31,7 @@ class RequestHandler @Inject()(router: Router,
   private def isREST(request: RequestHeader) = {
     request.uri match {
       case uri: String if uri.contains("post") => true
-      case _ => false
+      case _                                   => false
     }
   }
 
@@ -46,9 +44,7 @@ class RequestHandler @Inject()(router: Router,
         )
       } else {
         origReq.withTarget(
-          RequestTarget(path = path,
-                        uriString = origReq.uri,
-                        queryString = origReq.queryString)
+          RequestTarget(path = path, uriString = origReq.uri, queryString = origReq.queryString)
         )
       }
     } else {

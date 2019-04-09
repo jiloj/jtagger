@@ -10,7 +10,9 @@ import task.TaskTracker
 
 import scala.concurrent.ExecutionContext
 
-class TaskController @Inject()(taskTracker: TaskTracker, cc: ControllerComponents)(implicit ec: ExecutionContext) extends AbstractController(cc) {
+class TaskController @Inject()(taskTracker: TaskTracker, cc: ControllerComponents)(
+    implicit ec: ExecutionContext
+) extends AbstractController(cc) {
   private val logger = Logger("jtagger")
 
   /**
@@ -23,7 +25,8 @@ class TaskController @Inject()(taskTracker: TaskTracker, cc: ControllerComponent
     logger.info("TaskController#check")
 
     val uuid = UUID.fromString(id)
-    val (tracked, completed) = taskTracker.completed(uuid)
+    val (tracked, completed) = taskTracker
+      .completed(uuid)
       .map((true, _))
       .getOrElse((false, false))
 

@@ -23,8 +23,10 @@ import scala.concurrent.{ExecutionContext, Future}
   * @param cc The controller components.
   * @param ec The execution context for this controller.
   */
-class TaggerController @Inject()(taskTracker: TaskTracker, cc: TaggerControllerComponents)(implicit ec: ExecutionContext, actorSystem: ActorSystem)
-    extends TaggerBaseController(cc) {
+class TaggerController @Inject()(taskTracker: TaskTracker, cc: TaggerControllerComponents)(
+    implicit ec: ExecutionContext,
+    actorSystem: ActorSystem
+) extends TaggerBaseController(cc) {
   private val logger = Logger("jtagger")
   private implicit val mat = ActorMaterializer()
 
@@ -59,7 +61,13 @@ class TaggerController @Inject()(taskTracker: TaskTracker, cc: TaggerControllerC
       val taggerPipeline = createTagger(name, data)
       val creationTaskId = taskTracker.add(taggerPipeline)
 
-      Ok(Json.obj("success" -> true, "msg" -> s"$name tagger successfully created.", "task" -> creationTaskId))
+      Ok(
+        Json.obj(
+          "success" -> true,
+          "msg" -> s"$name tagger successfully created.",
+          "task" -> creationTaskId
+        )
+      )
     }
 
     taggerResult.getOrElse {
@@ -79,8 +87,9 @@ class TaggerController @Inject()(taskTracker: TaskTracker, cc: TaggerControllerC
     val populatedTraining = Source
       .fromIterator(() => data.value.iterator)
       .map(tup => (tup._1.toInt, tup._2.as[String]))
-      .mapAsync(4) { case (clueId, label) =>
-        jnode.clue(clueId).map((_, label))
+      .mapAsync(4) {
+        case (clueId, label) =>
+          jnode.clue(clueId).map((_, label))
       }
       .runWith(Sink.seq)
       .map(_.toMap)
