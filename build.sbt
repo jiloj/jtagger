@@ -1,6 +1,8 @@
 import sbt.Keys._
 cancelable in Global := true
 
+wartremoverErrors ++= Warts.unsafe
+
 scalaVersion in ThisBuild := "2.11.12"
 
 crossScalaVersions := Seq("2.11.12", "2.12.6")
@@ -41,7 +43,7 @@ libraryDependencies += ehcache
 
 // The Play project itself
 lazy val root = (project in file("."))
-  .enablePlugins(Common, PlayScala, GatlingPlugin)
+  .enablePlugins(Common, PlayScala, GatlingPlugin, WartRemover)
   .settings(
     name := """jtagger"""
   )
