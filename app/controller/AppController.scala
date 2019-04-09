@@ -20,8 +20,6 @@ class AppController @Inject()(appDAO: AppDAO, config: Configuration, cc: Control
 ) extends AbstractController(cc) {
   private val logger = Logger("jtagger")
 
-  def f(a: Int) = 10
-
   /**
     * Tags a given question.
     *
