@@ -95,13 +95,14 @@ class TaggerController @Inject()(taskTracker: TaskTracker, cc: TaggerControllerC
       .map(_.toMap)
 
     // Once the entire dataset is resolved with the jnode information, then map this information into a trained tagger.
-    populatedTraining.map { resolved =>
+    populatedTraining.flatMap { resolved =>
       val tagger = NaiveBayesTagger.create(resolved)
       val taggerPath = determineTaggerPath(name)
       NaiveBayesTagger.persist(tagger, taggerPath)
-      resourceHandler.insert(Tagger(name, name, LocalDate.now()))
-
       logger.trace(s"Finished creating tagger $name")
+
+      val insertTaggerAction = resourceHandler.insert(Tagger(name, name, LocalDate.now()))
+      insertTaggerAction.map { _ => logger.trace(s"Inserted tagger $name") }
     }
   }
 
