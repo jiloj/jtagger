@@ -27,10 +27,7 @@ class NaiveBayesTagger private (val model: PipelineModel) extends Model[Clue, St
     import spark.implicits._
 
     val df = Seq(input)
-      .map { clue =>
-        val clueTup = Clue.unapply(clue).get
-        (clueTup._1, clueTup._2, clueTup._3, clueTup._4, clueTup._5, "")
-      }
+      .map { case Clue(q, a, c, v, r) => (q, a, c, v, r, "") }
       .toDF("question", "answer", "category", "value", "round", "label")
     val classification = model.transform(df)
 
