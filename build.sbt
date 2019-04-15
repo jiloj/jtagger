@@ -1,9 +1,9 @@
 import sbt.Keys._
 cancelable in Global := true
 
-wartremoverErrors ++= Warts.allBut(Wart.DefaultArguments, Wart.Throw, Wart.Any, Wart.AsInstanceOf, Wart.Product, 
+wartremoverErrors ++= Warts.allBut(Wart.DefaultArguments, Wart.Throw, Wart.Any, Wart.AsInstanceOf, Wart.Product,
   Wart.Serializable, Wart.Var, Wart.Overloading, Wart.Nothing, Wart.ImplicitParameter, Wart.ToString, Wart.FinalCaseClass,
-  Wart.PublicInference, Wart.ExplicitImplicitTypes)
+  Wart.PublicInference, Wart.ExplicitImplicitTypes, Wart.MutableDataStructures)
 
 scalaVersion in ThisBuild := "2.11.12"
 
