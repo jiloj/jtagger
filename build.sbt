@@ -24,6 +24,7 @@ libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.47"
 libraryDependencies += "org.apache.hadoop" % "hadoop-client" % "2.7.2"
 
 libraryDependencies += "com.chuusai" %% "shapeless" % "2.3.3"
+libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.5"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % "2.5.21",
