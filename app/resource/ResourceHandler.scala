@@ -45,10 +45,10 @@ class ResourceHandler[A, B](dao: LookupableDAO[A] with AllDAO[A], convert: A => 
 }
 
 /**
+  * TODO: This should be changed in some way. This is not a good class structure. Leaving this blank for now.
   *
   * @param dao The DAO to interface with. This DAO should be lookupable and can access all elements from it.
   * @param convert The converter to go from db object to consumer resource.
-  * @param inverse
   * @param ec The execution environment to run in.
   * @tparam A The db model type that this handler takes in.
   * @tparam B The consumer resource type that this handler provides.
@@ -60,9 +60,9 @@ class WritableResourceHandler[A, B](
     extends ResourceHandler[A, B](dao, convert) {
 
   /**
-    *
-    * @param obj
-    * @return
+    * TODO: This should be changed in some way. This is not a good class structure. Leaving this blank for now.
+    * @param obj The object to write.
+    * @return A future that resolves with the inserted object.
     */
   def insert(obj: A): Future[A] = {
     dao.insert(obj)

@@ -10,6 +10,13 @@ import task.TaskTracker
 
 import scala.concurrent.ExecutionContext
 
+/**
+  * The TaskController surfaces information about long running task in the jtagger system.
+  *
+  * @param taskTracker The task tracker dependency that holds references to tasks in the jtagger system.
+  * @param cc Dependency on common controller components.
+  * @param ec Dependency on an execution context.
+  */
 class TaskController @Inject()(taskTracker: TaskTracker, cc: ControllerComponents)(
     implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
