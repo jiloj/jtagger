@@ -113,14 +113,15 @@ class TaggerBaseController @Inject()(tcc: TaggerControllerComponents)(implicit e
   def jnode: JNode = tcc.jnode
 
   def resourceHandler: WritableResourceHandler[Tagger, TaggerResource] =
-    new WritableResourceHandler[Tagger, TaggerResource](tcc.taggerRefDAO, createTaggerRefResource)
+    new WritableResourceHandler[Tagger, TaggerResource](tcc.taggerRefDAO, createTaggerResource)
 
   /**
+    * Creates a resource object from the raw database object.
     *
-    * @param tr
-    * @return
+    * @param tr The tagger to create a resource reference to.
+    * @return The resource object which is what is provided to clients rather than the raw database objects.
     */
-  def createTaggerRefResource(tr: Tagger): TaggerResource = {
+  def createTaggerResource(tr: Tagger): TaggerResource = {
     TaggerResource(tr.id, tr.filepath, tr.created)
   }
 }

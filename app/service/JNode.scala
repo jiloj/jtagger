@@ -13,6 +13,13 @@ import scala.concurrent.{ExecutionContext, Future}
   * @param ec The execution context to run the service requests on.
   */
 class JNode @Inject()(ws: WSClient)(implicit ec: ExecutionContext) {
+
+  /**
+    * Fetch a clue from the jnode service.
+    *
+    * @param id The id of the clue to retrieve.
+    * @return A future that resolves with the clue from the jnode service.
+    */
   def clue(id: Int): Future[Clue] = {
     for {
       clueResponse <- ws.url(JNode.clueURL(id)).get

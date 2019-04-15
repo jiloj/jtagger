@@ -10,6 +10,8 @@ import org.apache.spark.sql.SparkSession
 
 /**
   * The bare tagger functionality.
+  *
+  * @param model The internal spark model (already trained) this Tagger will use for its main logic.
   */
 class NaiveBayesTagger private (val model: PipelineModel) extends Model[Clue, String] {
 
