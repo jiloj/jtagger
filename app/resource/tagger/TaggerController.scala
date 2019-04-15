@@ -1,11 +1,13 @@
 package resource.tagger
 
+import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDate
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
+import com.github.tototoshi.csv.CSVReader
 import javax.inject.Inject
 import ml.spark.NaiveBayesTagger
 import model.base.Tagger
@@ -44,21 +46,21 @@ class TaggerController @Inject()(taskTracker: TaskTracker, cc: TaggerControllerC
   }
 
   /**
-    * Create a new TaggerRef using provided data.
+    * Create a new Tagger using provided data.
     *
-    * @return The info of the new created TaggerRef.
+    * @return The info of the new created Tagger.
     */
   def process: Action[JsValue] = TaggerAction(parse.json) { implicit request =>
-    logger.trace("TaggerRefController#process")
+    logger.trace("TaggerController#process")
 
     val nameOpt = (request.body \ "name").asOpt[String]
-    val dataOpt = (request.body \ "data").asOpt[JsObject]
+    val dataPathOpt = (request.body \ "datapath").asOpt[String]
 
     val taggerResult = for {
       name <- nameOpt
-      data <- dataOpt
+      dataPath <- dataPathOpt
     } yield {
-      val taggerPipeline = createTagger(name, data)
+      val taggerPipeline = createTagger(name, dataPath)
       val creationTaskId = taskTracker.add(taggerPipeline)
 
       Ok(
@@ -79,14 +81,16 @@ class TaggerController @Inject()(taskTracker: TaskTracker, cc: TaggerControllerC
     * Logic to create a tagger given a specified name and training data.
     *
     * @param name The name to give the tagger.
-    * @param data The data to train the tagger.
-    * @return
+    * @param dataPath The path to the data to train the tagger.
+    * @return A future that resolves when the tagger has finished being created.
     */
-  def createTagger(name: String, data: JsObject): Future[Unit] = {
+  def createTagger(name: String, dataPath: String): Future[Unit] = {
     // Convert the data source of clue ids to labels, to a populated / hydrated dataset using the jnode service
+    val reader = CSVReader.open(new File(dataPath))
+
     val populatedTraining = Source
-      .fromIterator(() => data.value.iterator)
-      .map(tup => (tup._1.toInt, tup._2.as[String]))
+      .fromIterator(() => reader.iteratorWithHeaders)
+      .map(row => (row("id").toInt, row("semanticcategory")))
       .mapAsync(4) {
         case (clueId, label) =>
           jnode.clue(clueId).map((_, label))
